@@ -10,18 +10,24 @@ struct FlightBookingView: View {
                 HeaderView()
                 
                 // 机场选择区域
-                VStack(spacing: 0) {
+                VStack(spacing: 1) {
                     AirportSelectionView(
                         label: "出发地",
                         code: viewModel.fromAirport,
                         city: viewModel.fromCity
                     )
+                    
+                    Divider()
+                        .padding(.horizontal)
+                        .background(Color.gray.opacity(0.1))
+                    
                     AirportSelectionView(
                         label: "目的地",
                         code: viewModel.toAirport,
                         city: viewModel.toCity
                     )
                 }
+                .padding(.vertical, 8)
                 .background(Color.cardWhite)
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 .onTapGesture {
@@ -51,52 +57,6 @@ struct FlightBookingView: View {
     }
 }
 
-// 拆分成子视图
-struct HeaderView: View {
-    var body: some View {
-        HStack {
-            Text("预订您的\n下一趟航班")
-                .font(.title)
-                .fontWeight(.bold)
-            
-            Spacer()
-            
-            NotificationAndProfileView()
-        }
-    }
+#Preview {
+    FlightBookingView()
 }
-
-struct NotificationAndProfileView: View {
-    var body: some View {
-        HStack(spacing: 12) {
-            NotificationButton()
-            ProfileImage()
-        }
-    }
-}
-
-struct ActionButtonsView: View {
-    @Binding var date: Date
-    
-    var body: some View {
-        HStack(spacing: 12) {
-            DateSelectionButton(date: date)
-            ReturnButton()
-            FilterButton()
-        }
-    }
-}
-
-// 修改 FlightResultCard
-struct FlightResultCard: View {
-    let flight: Flight
-    @State private var isHighlighted = false
-    
-    var body: some View {
-        NavigationLink {
-            BoardingPassView(flight: flight)
-        } label: {
-            // ... 卡片内容 ...
-        }
-    }
-} 
