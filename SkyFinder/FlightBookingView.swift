@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct FlightBookingView: View {
+    // 使用静态颜色属性
     @State private var fromAirport = "CDG"
     @State private var toAirport = "JFK"
     @State private var fromCity = "Paris, France"
@@ -12,7 +13,7 @@ struct FlightBookingView: View {
             VStack(alignment: .leading, spacing: 24) {
                 // 顶部区域
                 HStack {
-                    Text("Let's book your\nnext flight")
+                    Text("预订您的\n下一趟航班")
                         .font(.title)
                         .fontWeight(.bold)
                     
@@ -48,7 +49,7 @@ struct FlightBookingView: View {
                     AirportSelectionView(label: "From", code: fromAirport, city: fromCity)
                     AirportSelectionView(label: "To", code: toAirport, city: toCity)
                 }
-                .background(.white)
+                .background(Color.cardWhite)  // 使用静态颜色属性
                 .clipShape(RoundedRectangle(cornerRadius: 24))
                 
                 // 日期和筛选按钮
@@ -56,17 +57,28 @@ struct FlightBookingView: View {
                     Button {
                         // 日期选择动作
                     } label: {
-                        HStack {
-                            Text("Departure")
-                                .font(.caption)
-                                .foregroundColor(.white.opacity(0.6))
-                            Text("March 12, Tue")
-                                .foregroundColor(.white)
+                        NavigationLink {
+                            SeatSelectionView(
+                                departure: fromAirport,
+                                arrival: toAirport,
+                                departureTime: "03:00 AM",
+                                arrivalTime: "09:00 AM",
+                                price: "$120.00",
+                                airline: "AIRBUS"
+                            )
+                        } label: {
+                            HStack {
+                                Text("出发")
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.6))
+                                Text("3月12日, 周二")
+                                    .foregroundColor(.white)
+                            }
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.accentBlue)
+                            .clipShape(Capsule())
                         }
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.accentBlue)
-                        .clipShape(Capsule())
                     }
                     
                     Button {
@@ -75,7 +87,7 @@ struct FlightBookingView: View {
                         HStack {
                             Image(systemName: "plus")
                                 .foregroundColor(Color.accentBlue)
-                            Text("Return")
+                            Text("返程")
                                 .foregroundColor(.white)
                         }
                         .padding()
@@ -98,7 +110,7 @@ struct FlightBookingView: View {
                 }
                 
                 // 结果标题
-                Text("Results")
+                Text("搜索结果")
                     .font(.title2)
                     .fontWeight(.bold)
                 
@@ -114,7 +126,8 @@ struct FlightBookingView: View {
                             transfers: "1 transfer",
                             price: "$120.00",
                             airline: "airTran",
-                            isHighlighted: true
+                            isHighlighted: true,
+                            cardBackground: Color.cardWhite  // 使用静态颜色属性
                         )
                         
                         FlightResultCard(
@@ -126,13 +139,14 @@ struct FlightBookingView: View {
                             transfers: "no transfers",
                             price: "$120.00",
                             airline: "AIRBUS",
-                            isHighlighted: false
+                            isHighlighted: false,
+                            cardBackground: Color.cardWhite  // 使用静态颜色属性
                         )
                     }
                 }
             }
             .padding()
-            .background(Color(red: 0.06, green: 0.06, blue: 0.06))
+            .background(Color.backgroundBlue)  // 使用静态颜色属性
         }
         .preferredColorScheme(.dark)
     }
@@ -161,7 +175,7 @@ struct AirportSelectionView: View {
             Spacer()
             
             Circle()
-                .fill(Color(red: 0.06, green: 0.06, blue: 0.06))
+                .fill(Color(hex: "021324"))  // 使用深蓝色背景
                 .frame(width: 40, height: 40)
                 .overlay {
                     Image(systemName: "arrow.up.arrow.down")
@@ -183,51 +197,86 @@ struct FlightResultCard: View {
     let price: String
     let airline: String
     let isHighlighted: Bool
+    let cardBackground: Color
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("\(departure) → \(arrival)")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                Spacer()
-                
-                Text(price)
-                    .font(.title3)
-                    .fontWeight(.bold)
-            }
-            
-            HStack {
-                Text("\(departureTime) → \(arrivalTime)")
-                    .foregroundColor(.gray)
-                
-                Spacer()
-                
-                Text(airline)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Color(uiColor: .systemGray6))
-                    .clipShape(Capsule())
-            }
-            
-            HStack {
-                Text(duration)
-                if !transfers.isEmpty {
-                    Text(transfers)
-                        .foregroundColor(.accentBlue)
+        NavigationLink {
+            // 所有航班都显示登机牌界面
+            BoardingPassView(
+                flightNumber: "AB 4723211",
+                departure: departure,
+                arrival: arrival,
+                departureCity: arrival == "JFK" ? "巴黎, 法国" : "巴黎, 法国",
+                arrivalCity: arrival == "JFK" ? "纽约, 美国" : "都柏林, 爱尔兰",
+                boardingTime: "01:20 AM",
+                departureTime: departureTime,
+                arrivalTime: arrivalTime,
+                date: "3月12日, 周二",
+                flightClass: "经济舱",
+                passengerName: "张三",
+                terminal: "1",
+                gate: "37",
+                seat: "1C",
+                airline: airline
+            )
+        } label: {
+            VStack(spacing: 16) {
+                // 航线和价格
+                HStack(alignment: .center) {
+                    Text(departure)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Image(systemName: "arrow.right")
+                        .foregroundColor(isHighlighted ? .white : .gray)
+                        .padding(.horizontal, 4)
+                    
+                    Text(arrival)
+                        .font(.title2)
+                        .fontWeight(.bold)
+                    
+                    Spacer()
+                    
+                    Text(price)
+                        .font(.title2)
+                        .fontWeight(.bold)
                 }
+                
+                // 时间信息
+                HStack {
+                    Text(departureTime)
+                    Image(systemName: "arrow.right")
+                        .font(.caption)
+                    Text(arrivalTime)
+                    
+                    Spacer()
+                    
+                    Text(airline)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(isHighlighted ? Color.black.opacity(0.3) : Color.gray.opacity(0.1))
+                        .clipShape(Capsule())
+                }
+                .foregroundColor(isHighlighted ? .white.opacity(0.8) : .gray)
+                
+                // 时长和中转
+                HStack {
+                    Text(duration)
+                    if !transfers.isEmpty {
+                        Text(transfers)
+                            .foregroundColor(isHighlighted ? .white : .accentBlue)
+                    }
+                }
+                .font(.subheadline)
+                .foregroundColor(isHighlighted ? .white.opacity(0.8) : .gray)
             }
-            .font(.subheadline)
+            .padding()
+            .frame(maxWidth: .infinity)
+            .background(isHighlighted ? Color.accentBlue : cardBackground)  // 使用传入的卡片背景色
+            .foregroundColor(isHighlighted ? .white : .black)
+            .clipShape(RoundedRectangle(cornerRadius: 16))
         }
-        .padding()
-        .background(isHighlighted ? Color.accentBlue : Color(uiColor: .systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 16))
     }
-}
-
-extension Color {
-    static let accentBlue = Color(red: 0.35, green: 0.55, blue: 1.0)
 }
 
 #Preview {
