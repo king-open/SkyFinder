@@ -7,6 +7,7 @@ class FlightBookingViewModel: ObservableObject {
     @Published var toCity = "上海虹桥"
     @Published var selectedDate = Date()
     @Published var flights: [Flight] = []
+    @Published var filter = FlightFilter()
     
     // 将 commonAirports 改为公开属性
     let commonAirports: [Airport] = [
@@ -107,6 +108,26 @@ class FlightBookingViewModel: ObservableObject {
         
         // 交换后更新航班列表
         updateFlights()
+    }
+    
+    var filteredFlights: [Flight] {
+        flights.filter { flight in
+            // 价格筛选
+            let price = Double(flight.price.dropFirst()) ?? 0
+            guard filter.priceRange.contains(price) else { return false }
+            
+            // 航空公司筛选
+            if !filter.airlines.isEmpty && !filter.airlines.contains(flight.airline) {
+                return false
+            }
+            
+            // 直飞筛选
+            if filter.directFlightsOnly && flight.transfers != "直飞" {
+                return false
+            }
+            
+            return true
+        }
     }
 }
 
