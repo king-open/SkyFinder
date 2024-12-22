@@ -73,15 +73,52 @@ struct FlightBookingView: View {
                 }
                 
                 // 日期选择和筛选
-                ActionButtonsView(date: $viewModel.selectedDate)
+                ActionButtonsView(
+                    date: $viewModel.selectedDate,
+                    isRoundTrip: $viewModel.isRoundTrip,
+                    returnDate: $viewModel.returnDate,
+                    filter: $viewModel.filter
+                )
                 
                 // 结果列表
-                Text("搜索结果")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                
-                ScrollView {
-                    LazyVStack(spacing: 12) {
+                VStack(spacing: 16) {
+                    if viewModel.isRoundTrip {
+                        // 去程航班
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("去程")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            
+                            ForEach(viewModel.flights) { flight in
+                                FlightResultCard(flight: flight)
+                            }
+                        }
+                        
+                        // 返程航班
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("返程")
+                                .font(.headline)
+                                .foregroundColor(.gray)
+                            
+                            ForEach(viewModel.returnFlights) { flight in
+                                FlightResultCard(flight: flight)
+                            }
+                        }
+                        
+                        // 总价
+                        HStack {
+                            Text("总价")
+                                .font(.headline)
+                            Spacer()
+                            Text(viewModel.totalPrice)
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .foregroundColor(.accentBlue)
+                        }
+                        .padding()
+                        .background(Color.cardWhite)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                    } else {
                         ForEach(viewModel.flights) { flight in
                             FlightResultCard(flight: flight)
                         }

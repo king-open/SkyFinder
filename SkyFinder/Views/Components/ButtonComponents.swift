@@ -37,7 +37,7 @@ struct ProfileImage: View {
 
 struct DateSelectionButton: View {
     @State private var showingDatePicker = false
-    let date: Date
+    @Binding var date: Date
     
     var body: some View {
         Button {
@@ -58,7 +58,7 @@ struct DateSelectionButton: View {
             .clipShape(Capsule())
         }
         .sheet(isPresented: $showingDatePicker) {
-            DateSelectionView(selectedDate: .constant(date))
+            DateSelectionView(selectedDate: $date)
         }
     }
 }
@@ -76,36 +76,69 @@ extension FormatStyle where Self == Date.FormatStyle {
 }
 
 struct ReturnButton: View {
+    @Binding var isRoundTrip: Bool
+    @Binding var returnDate: Date
+    @State private var showingDatePicker = false
+    
     var body: some View {
         Button {
-            // 返���选择
+            if isRoundTrip {
+                showingDatePicker = true
+            } else {
+                isRoundTrip = true
+                showingDatePicker = true
+            }
         } label: {
             HStack {
-                Image(systemName: "plus")
-                    .foregroundColor(Color.accentBlue)
-                Text("返程")
-                    .foregroundColor(.white)
+                if isRoundTrip {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("返程")
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.6))
+                        Text(returnDate.formatted(.custom))
+                            .foregroundColor(.white)
+                    }
+                } else {
+                    Image(systemName: "plus")
+                        .foregroundColor(Color.accentBlue)
+                    Text("返程")
+                        .foregroundColor(.white)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity)
+            .background(isRoundTrip ? Color.accentBlue : .clear)
             .overlay {
-                Capsule()
-                    .strokeBorder(Color.accentBlue.opacity(0.5), style: StrokeStyle(lineWidth: 1, dash: [4]))
+                if !isRoundTrip {
+                    Capsule()
+                        .strokeBorder(Color.accentBlue.opacity(0.5), 
+                                    style: StrokeStyle(lineWidth: 1, dash: [4]))
+                }
             }
+            .clipShape(Capsule())
+        }
+        .sheet(isPresented: $showingDatePicker) {
+            DateSelectionView(selectedDate: $returnDate)
         }
     }
 }
 
 struct FilterButton: View {
+    @Binding var filter: FlightFilter
+    @State private var showingFilter = false
+    
     var body: some View {
         Button {
-            // 筛选动作
+            showingFilter = true
         } label: {
             Image(systemName: "slider.horizontal.3")
                 .padding()
                 .background(Color.accentBlue)
                 .foregroundColor(.white)
                 .clipShape(Circle())
+        }
+        .sheet(isPresented: $showingFilter) {
+            FlightFilterView(filter: $filter)
         }
     }
 } 

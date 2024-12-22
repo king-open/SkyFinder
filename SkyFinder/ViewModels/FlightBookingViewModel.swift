@@ -8,6 +8,9 @@ class FlightBookingViewModel: ObservableObject {
     @Published var selectedDate = Date()
     @Published var flights: [Flight] = []
     @Published var filter = FlightFilter()
+    @Published var isRoundTrip = false
+    @Published var returnDate = Date()
+    @Published var returnFlights: [Flight] = []
     
     // 将 commonAirports 改为公开属性
     let commonAirports: [Airport] = [
@@ -81,19 +84,35 @@ class FlightBookingViewModel: ObservableObject {
     }
     
     func updateFlights() {
-        // 根据当前选择的出发地和目的地筛选航班
+        // 更新去程航班
         flights = allFlights
             .filter { flight in
                 flight.departure == fromAirport && flight.arrival == toAirport
             }
             .sorted { flight1, flight2 in
-                // 按照起飞时间排序
                 let formatter = DateFormatter()
                 formatter.dateFormat = "hh:mm a"
                 let time1 = formatter.date(from: flight1.departureTime) ?? Date()
                 let time2 = formatter.date(from: flight2.departureTime) ?? Date()
                 return time1 < time2
             }
+        
+        // 如果是往返，更新返程航班
+        if isRoundTrip {
+            returnFlights = allFlights
+                .filter { flight in
+                    flight.departure == toAirport && flight.arrival == fromAirport
+                }
+                .sorted { flight1, flight2 in
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "hh:mm a"
+                    let time1 = formatter.date(from: flight1.departureTime) ?? Date()
+                    let time2 = formatter.date(from: flight2.departureTime) ?? Date()
+                    return time1 < time2
+                }
+        } else {
+            returnFlights = []
+        }
     }
     
     func swapAirports() {
@@ -128,6 +147,12 @@ class FlightBookingViewModel: ObservableObject {
             
             return true
         }
+    }
+    
+    var totalPrice: String {
+        let outboundPrice = Double(flights.first?.price.dropFirst() ?? "0") ?? 0
+        let returnPrice = isRoundTrip ? (Double(returnFlights.first?.price.dropFirst() ?? "0") ?? 0) : 0
+        return "¥\(Int(outboundPrice + returnPrice))"
     }
 }
 
