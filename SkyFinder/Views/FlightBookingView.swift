@@ -15,7 +15,11 @@ struct FlightBookingView: View {
                         label: "出发地",
                         code: viewModel.fromAirport,
                         city: viewModel.fromCity
-                    )
+                    ) { code, city in
+                        viewModel.fromAirport = code
+                        viewModel.fromCity = city
+                        viewModel.updateFlights()
+                    }
                     
                     Divider()
                         .padding(.horizontal)
@@ -25,7 +29,11 @@ struct FlightBookingView: View {
                         label: "目的地",
                         code: viewModel.toAirport,
                         city: viewModel.toCity
-                    )
+                    ) { code, city in
+                        viewModel.toAirport = code
+                        viewModel.toCity = city
+                        viewModel.updateFlights()
+                    }
                 }
                 .padding(.vertical, 8)
                 .background(Color.cardWhite)
@@ -53,6 +61,7 @@ struct FlightBookingView: View {
             .padding()
             .background(Color.backgroundBlue)
         }
+        .environmentObject(viewModel)
         .preferredColorScheme(.dark)
     }
 }

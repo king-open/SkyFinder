@@ -12,4 +12,5 @@ struct Flight: Identifiable {
     let transfers: String
     let price: String
     let airline: String
+    let isInternational: Bool
 } 

@@ -6,12 +6,16 @@ struct NotificationButton: View {
             .strokeBorder(.white.opacity(0.2), lineWidth: 1)
             .frame(width: 40, height: 40)
             .overlay {
-                Circle()
-                    .fill(Color.accentBlue)
-                    .frame(width: 12, height: 12)
-                    .offset(x: 8, y: -8)
-                Image(systemName: "bell")
-                    .foregroundColor(.white)
+                ZStack {
+                    Image(systemName: "bell")
+                        .foregroundColor(.white)
+                    
+                    // 蓝色小圆点
+                    Circle()
+                        .fill(Color.accentBlue)
+                        .frame(width: 8, height: 8)
+                        .offset(x: 8, y: -8)
+                }
             }
     }
 }
@@ -19,11 +23,14 @@ struct NotificationButton: View {
 struct ProfileImage: View {
     var body: some View {
         Circle()
-            .fill(.gray.opacity(0.2))
+            .fill(Color.cardWhite.opacity(0.1))
             .frame(width: 40, height: 40)
             .overlay {
-                Image("profile")
+                // 这里需要添加实际的头像图片
+                Image("avatar") // 需要在 Assets 中添加头像图片
                     .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: 36, height: 36)
                     .clipShape(Circle())
             }
     }
