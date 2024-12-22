@@ -1,4 +1,5 @@
 import Network
+import Combine
 
 /// 网络状态监控器
 /// 用于监控设备的网络连接状态

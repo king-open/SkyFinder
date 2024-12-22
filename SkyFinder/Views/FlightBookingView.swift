@@ -25,22 +25,19 @@ struct FlightBookingView: View {
                 }
                 
                 // 常用航线
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(userViewModel.frequentRoutes) { route in
-                            FrequentRouteCard(route: route)
-                                .onTapGesture {
-                                    // 点击时更新出发地和目的地
-                                    viewModel.fromAirport = route.from
-                                    viewModel.fromCity = route.fromCity
-                                    viewModel.toAirport = route.to
-                                    viewModel.toCity = route.toCity
-                                    viewModel.updateFlights()
-                                }
-                        }
+                HStack(spacing: 12) {
+                    ForEach(userViewModel.frequentRoutes.prefix(3)) { route in
+                        FrequentRouteCard(route: route)
+                            .onTapGesture {
+                                viewModel.fromAirport = route.from
+                                viewModel.fromCity = route.fromCity
+                                viewModel.toAirport = route.to
+                                viewModel.toCity = route.toCity
+                                viewModel.updateFlights()
+                            }
                     }
-                    .padding(.horizontal)
                 }
+                .padding(.horizontal)
                 
                 // 机场选择区域
                 VStack(spacing: 1) {
@@ -97,31 +94,6 @@ struct FlightBookingView: View {
         .environmentObject(viewModel)
         .environmentObject(userViewModel)
         .preferredColorScheme(.dark)
-    }
-}
-
-// 常用航线卡片
-struct FrequentRouteCard: View {
-    let route: Route
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(route.from)
-                    .font(.headline)
-                Image(systemName: "arrow.right")
-                    .font(.caption)
-                Text(route.to)
-                    .font(.headline)
-            }
-            
-            Text("常用航线")
-                .font(.caption)
-                .foregroundColor(.gray)
-        }
-        .padding()
-        .background(Color.cardWhite)
-        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 
