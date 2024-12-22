@@ -154,6 +154,13 @@ class FlightBookingViewModel: ObservableObject {
         let returnPrice = isRoundTrip ? (Double(returnFlights.first?.price.dropFirst() ?? "0") ?? 0) : 0
         return "¥\(Int(outboundPrice + returnPrice))"
     }
+    
+    // 取消返程
+    func cancelReturnFlight() {
+        isRoundTrip = false
+        returnFlights = []
+        // 可以在这里添加其他清理逻辑
+    }
 }
 
 // 机场数据模型

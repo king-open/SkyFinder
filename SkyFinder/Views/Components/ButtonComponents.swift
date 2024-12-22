@@ -79,6 +79,7 @@ struct ReturnButton: View {
     @Binding var isRoundTrip: Bool
     @Binding var returnDate: Date
     @State private var showingDatePicker = false
+    @EnvironmentObject var viewModel: FlightBookingViewModel
     
     var body: some View {
         Button {
@@ -116,6 +117,22 @@ struct ReturnButton: View {
                 }
             }
             .clipShape(Capsule())
+        }
+        // 添加长按手势
+        .onLongPressGesture {
+            if isRoundTrip {
+                viewModel.cancelReturnFlight()
+            }
+        }
+        // 添加上下文菜单
+        .contextMenu {
+            if isRoundTrip {
+                Button(role: .destructive) {
+                    viewModel.cancelReturnFlight()
+                } label: {
+                    Label("取消返程", systemImage: "xmark.circle")
+                }
+            }
         }
         .sheet(isPresented: $showingDatePicker) {
             DateSelectionView(selectedDate: $returnDate)
