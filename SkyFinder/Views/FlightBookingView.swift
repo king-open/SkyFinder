@@ -2,12 +2,37 @@ import SwiftUI
 
 struct FlightBookingView: View {
     @StateObject private var viewModel = FlightBookingViewModel()
+    @StateObject private var userViewModel = UserViewModel()
     
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 24) {
                 // 顶部区域
-                HeaderView()
+                HStack {
+                    VStack(alignment: .leading) {
+                        Text("您好，\(userViewModel.currentUser.name)")
+                            .font(.headline)
+                        if userViewModel.currentUser.frequentFlyer {
+                            Text("常旅客会员")
+                                .font(.subheadline)
+                                .foregroundColor(.accentBlue)
+                        }
+                    }
+                    
+                    Spacer()
+                    
+                    NotificationAndProfileView()
+                }
+                
+                // 常用航线
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(userViewModel.frequentRoutes, id: \.from) { route in
+                            FrequentRouteCard(from: route.from, to: route.to)
+                        }
+                    }
+                    .padding(.horizontal)
+                }
                 
                 // 机场选择区域
                 VStack(spacing: 1) {
@@ -62,7 +87,34 @@ struct FlightBookingView: View {
             .background(Color.backgroundBlue)
         }
         .environmentObject(viewModel)
+        .environmentObject(userViewModel)
         .preferredColorScheme(.dark)
+    }
+}
+
+// 常用航线卡片
+struct FrequentRouteCard: View {
+    let from: String
+    let to: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(from)
+                    .font(.headline)
+                Image(systemName: "arrow.right")
+                    .font(.caption)
+                Text(to)
+                    .font(.headline)
+            }
+            
+            Text("常用航线")
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        .padding()
+        .background(Color.cardWhite)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
 

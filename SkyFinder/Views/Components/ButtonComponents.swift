@@ -37,31 +37,42 @@ struct ProfileImage: View {
 }
 
 struct DateSelectionButton: View {
+    @State private var showingDatePicker = false
     let date: Date
     
     var body: some View {
-        NavigationLink {
-            SeatSelectionView(
-                departure: "CDG",
-                arrival: "JFK",
-                departureTime: "03:00 AM",
-                arrivalTime: "09:00 AM",
-                price: "$120.00",
-                airline: "AIRBUS"
-            )
+        Button {
+            showingDatePicker.toggle()
         } label: {
             HStack {
-                Text("出发")
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.6))
-                Text("3月12日, 周二")
-                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("出发")
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.6))
+                    Text(date.formatted(.custom))
+                        .foregroundColor(.white)
+                }
             }
             .padding()
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.accentBlue)
             .clipShape(Capsule())
         }
+        .sheet(isPresented: $showingDatePicker) {
+            DateSelectionView(selectedDate: .constant(date))
+        }
+    }
+}
+
+// 添加日期格式化扩展
+extension FormatStyle where Self == Date.FormatStyle {
+    static var custom: Self {
+        .init()
+            .year(.twoDigits)
+            .month(.defaultDigits)
+            .day(.defaultDigits)
+            .weekday(.abbreviated)
+            .locale(.init(identifier: "zh_CN"))
     }
 }
 
