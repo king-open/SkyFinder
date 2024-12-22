@@ -1,14 +1,36 @@
 import SwiftUI
 
+/// 机场选择视图
+/// 提供机场搜索和选择功能
 struct AirportSelectionView: View {
+    // MARK: - Properties
+    /// 标签文本（出发地/目的地）
     let label: String
+    /// 机场代码
     let code: String
+    /// 城市名称
     let city: String
+    /// 控制选择器显示状态
     @State private var isShowingPicker = false
+    /// 搜索文本
     @State private var searchText = ""
+    /// 视图模型引用
     @EnvironmentObject var viewModel: FlightBookingViewModel
     
+    /// 选择回调
     var onSelect: ((String, String) -> Void)?
+    
+    // MARK: - Computed Properties
+    /// 搜索建议列表
+    var searchSuggestions: [Airport] {
+        if searchText.isEmpty {
+            return []
+        }
+        return viewModel.commonAirports.filter {
+            $0.code.localizedCaseInsensitiveContains(searchText) ||
+            $0.city.localizedCaseInsensitiveContains(searchText)
+        }
+    }
     
     var filteredAirports: [Airport] {
         if searchText.isEmpty {
@@ -110,10 +132,27 @@ struct AirportSelectionView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "搜索城市或机场")
+            .searchSuggestions {
+                ForEach(searchSuggestions) { airport in
+                    Button {
+                        onSelect?(airport.code, airport.city)
+                        isShowingPicker = false
+                    } label: {
+                        VStack(alignment: .leading) {
+                            Text(airport.code)
+                                .font(.headline)
+                            Text(airport.city)
+                                .font(.subheadline)
+                                .foregroundColor(.gray)
+                        }
+                    }
+                }
+            }
         }
     }
 }
 
+/// 机场列表项视图
 struct AirportRow: View {
     let code: String
     let city: String

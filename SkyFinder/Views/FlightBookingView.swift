@@ -27,8 +27,16 @@ struct FlightBookingView: View {
                 // 常用航线
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(userViewModel.frequentRoutes, id: \.from) { route in
-                            FrequentRouteCard(from: route.from, to: route.to)
+                        ForEach(userViewModel.frequentRoutes) { route in
+                            FrequentRouteCard(route: route)
+                                .onTapGesture {
+                                    // 点击时更新出发地和目的地
+                                    viewModel.fromAirport = route.from
+                                    viewModel.fromCity = route.fromCity
+                                    viewModel.toAirport = route.to
+                                    viewModel.toCity = route.toCity
+                                    viewModel.updateFlights()
+                                }
                         }
                     }
                     .padding(.horizontal)
@@ -94,17 +102,16 @@ struct FlightBookingView: View {
 
 // 常用航线卡片
 struct FrequentRouteCard: View {
-    let from: String
-    let to: String
+    let route: Route
     
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text(from)
+                Text(route.from)
                     .font(.headline)
                 Image(systemName: "arrow.right")
                     .font(.caption)
-                Text(to)
+                Text(route.to)
                     .font(.headline)
             }
             

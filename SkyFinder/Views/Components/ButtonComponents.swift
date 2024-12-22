@@ -26,12 +26,11 @@ struct ProfileImage: View {
             .fill(Color.cardWhite.opacity(0.1))
             .frame(width: 40, height: 40)
             .overlay {
-                // 这里需要添加实际的头像图片
-                Image("avatar") // 需要在 Assets 中添加头像图片
+                // 使用系统图标替代
+                Image(systemName: "person.circle.fill")
                     .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: 36, height: 36)
-                    .clipShape(Circle())
+                    .foregroundColor(.gray)
+                    .padding(8)
             }
     }
 }
@@ -79,7 +78,7 @@ extension FormatStyle where Self == Date.FormatStyle {
 struct ReturnButton: View {
     var body: some View {
         Button {
-            // 返程选择
+            // 返���选择
         } label: {
             HStack {
                 Image(systemName: "plus")

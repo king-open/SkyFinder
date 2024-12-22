@@ -19,11 +19,11 @@ class UserViewModel: ObservableObject {
     }
     
     // 获取用户常用航线
-    var frequentRoutes: [(from: String, to: String)] {
+    var frequentRoutes: [FrequentRoute] {
         [
-            ("PEK", "SHA"),  // 北京-上海
-            ("PEK", "CAN"),  // 北京-广州
-            ("PEK", "CTU")   // 北京-成都
+            FrequentRoute(id: UUID(), from: "PEK", to: "SHA", fromCity: "北京", toCity: "上海"),
+            FrequentRoute(id: UUID(), from: "PEK", to: "CAN", fromCity: "北京", toCity: "广州"),
+            FrequentRoute(id: UUID(), from: "PEK", to: "CTU", fromCity: "北京", toCity: "成都")
         ]
     }
     
@@ -83,4 +83,12 @@ struct Coupon: Identifiable {
     var isValid: Bool {
         expireDate > Date()
     }
+}
+
+struct FrequentRoute: Identifiable {
+    let id: UUID
+    let from: String
+    let to: String
+    let fromCity: String
+    let toCity: String
 } 
