@@ -17,7 +17,7 @@ struct DateSelectionView: View {
         case 6: // 周五
             return ("¥1480", "¥1780")
         default: // 工作日
-            return ("¥1280", "¥1580")
+            return ("¥1280", "¥234")
         }
     }
     

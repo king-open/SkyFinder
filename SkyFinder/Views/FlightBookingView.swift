@@ -7,38 +7,6 @@ struct FlightBookingView: View {
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading, spacing: 24) {
-                // 顶部区域
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("您好，\(userViewModel.currentUser.name)")
-                            .font(.headline)
-                        if userViewModel.currentUser.frequentFlyer {
-                            Text("常旅客会员")
-                                .font(.subheadline)
-                                .foregroundColor(.accentBlue)
-                        }
-                    }
-                    
-                    Spacer()
-                    
-                    NotificationAndProfileView()
-                }
-                
-                // 常用航线
-                HStack(spacing: 12) {
-                    ForEach(userViewModel.frequentRoutes.prefix(3)) { route in
-                        FrequentRouteCard(route: route)
-                            .onTapGesture {
-                                viewModel.fromAirport = route.from
-                                viewModel.fromCity = route.fromCity
-                                viewModel.toAirport = route.to
-                                viewModel.toCity = route.toCity
-                                viewModel.updateFlights()
-                            }
-                    }
-                }
-                .padding(.horizontal)
-                
                 // 机场选择区域
                 VStack(spacing: 1) {
                     AirportSelectionView(

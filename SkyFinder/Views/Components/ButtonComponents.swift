@@ -17,6 +17,7 @@ struct NotificationButton: View {
                         .offset(x: 8, y: -8)
                 }
             }
+            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
     }
 }
 
@@ -56,6 +57,7 @@ struct DateSelectionButton: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(Color.accentBlue)
             .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
         }
         .sheet(isPresented: $showingDatePicker) {
             DateSelectionView(selectedDate: $date)
@@ -117,14 +119,13 @@ struct ReturnButton: View {
                 }
             }
             .clipShape(Capsule())
+            .shadow(color: .black.opacity(0.15), radius: 10, x: 0, y: 4)
         }
-        // 添加长按手势
         .onLongPressGesture {
             if isRoundTrip {
                 viewModel.cancelReturnFlight()
             }
         }
-        // 添加上下文菜单
         .contextMenu {
             if isRoundTrip {
                 Button(role: .destructive) {
@@ -154,6 +155,8 @@ struct FilterButton: View {
                 .foregroundColor(.white)
                 .clipShape(Circle())
         }
+        .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
+        .shadow(color: .black.opacity(0.1), radius: 16, x: 0, y: 4)
         .sheet(isPresented: $showingFilter) {
             FlightFilterView(filter: $filter)
         }
