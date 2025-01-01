@@ -11,6 +11,8 @@ class FlightBookingViewModel: ObservableObject {
     @Published var isRoundTrip = false
     @Published var returnDate = Date()
     @Published var returnFlights: [Flight] = []
+    @Published var page = 1
+    @Published var isLoading = false
     
     // 将 commonAirports 改为公开属性
     let commonAirports: [Airport] = [
@@ -160,6 +162,61 @@ class FlightBookingViewModel: ObservableObject {
         isRoundTrip = false
         returnFlights = []
         // 可以在这里添加其他清理逻辑
+    }
+    
+    // 刷新航班列表
+    func refreshFlights() async {
+        await MainActor.run {
+            page = 1
+            flights = []
+            updateFlights()
+        }
+    }
+    
+    // 加载更多航班
+    func loadMoreFlights() async {
+        guard !isLoading else { return }
+        
+        await MainActor.run {
+            isLoading = true
+            page += 1
+            
+            // 模拟加载更多数据
+            let moreFlights = allFlights
+                .filter { flight in
+                    flight.departure == fromAirport && flight.arrival == toAirport
+                }
+                .map { flight in
+                    // 创建新的航班实例，修改一些属性以模拟不同航班
+                    Flight(
+                        departure: flight.departure,
+                        arrival: flight.arrival,
+                        departureCity: flight.departureCity,
+                        arrivalCity: flight.arrivalCity,
+                        departureTime: modifyTime(flight.departureTime, offset: page * 2),
+                        arrivalTime: modifyTime(flight.arrivalTime, offset: page * 2),
+                        duration: flight.duration,
+                        transfers: flight.transfers,
+                        price: "¥\(Int(Double(flight.price.dropFirst())!) + page * 100)",
+                        airline: flight.airline,
+                        isInternational: flight.isInternational
+                    )
+                }
+            
+            flights.append(contentsOf: moreFlights)
+            isLoading = false
+        }
+    }
+    
+    // 辅助方法：修改时间
+    private func modifyTime(_ time: String, offset: Int) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh:mm a"
+        
+        guard let date = formatter.date(from: time) else { return time }
+        let modifiedDate = Calendar.current.date(byAdding: .hour, value: offset, to: date) ?? date
+        
+        return formatter.string(from: modifiedDate)
     }
 }
 
