@@ -283,7 +283,9 @@ struct DetailRow: View {
 // 完整的 BookingView 实现
 struct BookingView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var userViewModel: UserViewModel
     let flight: Flight
+    
     @State private var passenger = Passenger(
         name: "",
         idType: .idCard,
@@ -293,6 +295,7 @@ struct BookingView: View {
     )
     @State private var additionalServices = AdditionalService.services
     @State private var showingPayment = false
+    @State private var showingLogin = false
     @State private var isValid = false
     
     var totalPrice: Double {
@@ -305,95 +308,138 @@ struct BookingView: View {
     
     var body: some View {
         NavigationStack {
-            Form {
-                // 乘客信息
-                Section("乘客信息") {
-                    TextField("姓名", text: $passenger.name)
-                    
-                    Picker("证件类型", selection: $passenger.idType) {
-                        ForEach(Passenger.IDType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+            if userViewModel.currentUser != nil {
+                Form {
+                    // 乘客信息
+                    Section("乘客信息") {
+                        TextField("姓名", text: $passenger.name)
+                        
+                        Picker("证件类型", selection: $passenger.idType) {
+                            ForEach(Passenger.IDType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
+                        }
+                        
+                        TextField("证件号码", text: $passenger.idNumber)
+                        
+                        TextField("手机号", text: $passenger.phoneNumber)
+                            .keyboardType(.numberPad)
+                        
+                        Picker("乘客类型", selection: $passenger.passengerType) {
+                            ForEach(Passenger.PassengerType.allCases, id: \.self) { type in
+                                Text(type.rawValue).tag(type)
+                            }
                         }
                     }
                     
-                    TextField("证件号码", text: $passenger.idNumber)
-                    
-                    TextField("手机号", text: $passenger.phoneNumber)
-                        .keyboardType(.numberPad)
-                    
-                    Picker("乘客类型", selection: $passenger.passengerType) {
-                        ForEach(Passenger.PassengerType.allCases, id: \.self) { type in
-                            Text(type.rawValue).tag(type)
+                    // 附加服务
+                    Section("附加服务") {
+                        ForEach($additionalServices) { $service in
+                            AdditionalServiceRow(service: $service)
                         }
                     }
-                }
-                
-                // 附加服务
-                Section("附加服务") {
-                    ForEach($additionalServices) { $service in
-                        AdditionalServiceRow(service: $service)
-                    }
-                }
-                
-                // 价格明细
-                Section("价格明细") {
-                    HStack {
-                        Text("机票价格")
-                        Spacer()
-                        Text(flight.price)
-                    }
                     
-                    ForEach(additionalServices.filter { $0.isSelected }) { service in
+                    // 价格明细
+                    Section("价格明细") {
                         HStack {
-                            Text(service.name)
+                            Text("机票价格")
                             Spacer()
-                            Text("¥\(Int(service.price))")
+                            Text(flight.price)
+                        }
+                        
+                        ForEach(additionalServices.filter { $0.isSelected }) { service in
+                            HStack {
+                                Text(service.name)
+                                Spacer()
+                                Text("¥\(Int(service.price))")
+                            }
+                        }
+                        
+                        HStack {
+                            Text("总价")
+                                .fontWeight(.bold)
+                            Spacer()
+                            Text("¥\(Int(totalPrice))")
+                                .fontWeight(.bold)
+                                .foregroundColor(.accentBlue)
                         }
                     }
+                }
+                .navigationTitle("填写订单")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("取消") {
+                            dismiss()
+                        }
+                    }
+                }
+                .onChange(of: passenger) { _, newValue in
+                    validateForm()
+                }
+                .onAppear {
+                    autoFillUserInfo()
+                }
+                .safeAreaInset(edge: .bottom) {
+                    Button {
+                        showingPayment = true
+                    } label: {
+                        Text("确认支付 ¥\(Int(totalPrice))")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(isValid ? Color.accentBlue : Color.gray)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .disabled(!isValid)
+                    .padding()
+                }
+                .sheet(isPresented: $showingPayment) {
+                    PaymentView(
+                        flight: flight,
+                        isRoundTrip: false,
+                        returnFlight: nil
+                    )
+                }
+            } else {
+                VStack(spacing: 20) {
+                    Image(systemName: "person.circle")
+                        .font(.system(size: 60))
+                        .foregroundColor(.gray)
                     
-                    HStack {
-                        Text("总价")
-                            .fontWeight(.bold)
-                        Spacer()
-                        Text("¥\(Int(totalPrice))")
-                            .fontWeight(.bold)
-                            .foregroundColor(.accentBlue)
+                    Text("请先登录")
+                        .font(.title2)
+                    
+                    Text("登录后即可预订航班")
+                        .foregroundColor(.gray)
+                    
+                    Button {
+                        showingLogin = true
+                    } label: {
+                        Text("立即登录")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.accentBlue)
+                            .foregroundColor(.white)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
                     }
+                    .padding(.top)
                 }
-            }
-            .navigationTitle("填写订单")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("取消") {
-                        dismiss()
-                    }
-                }
-            }
-            .onChange(of: passenger) { _, newValue in
-                validateForm()
-            }
-            .safeAreaInset(edge: .bottom) {
-                Button {
-                    showingPayment = true
-                } label: {
-                    Text("确认支付 ¥\(Int(totalPrice))")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(isValid ? Color.accentBlue : Color.gray)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .disabled(!isValid)
                 .padding()
-            }
-            .sheet(isPresented: $showingPayment) {
-                PaymentView(
-                    flight: flight,
-                    isRoundTrip: false,
-                    returnFlight: nil
-                )
+                .navigationTitle("预订航班")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("取消") {
+                            dismiss()
+                        }
+                    }
+                }
+                .sheet(isPresented: $showingLogin) {
+                    LoginView()
+                }
             }
         }
     }
@@ -402,6 +448,14 @@ struct BookingView: View {
         isValid = !passenger.name.isEmpty &&
                  !passenger.idNumber.isEmpty &&
                  passenger.phoneNumber.count == 11
+    }
+    
+    private func autoFillUserInfo() {
+        guard let user = userViewModel.currentUser else { return }
+        passenger.name = user.name
+        if let phone = user.phoneNumber {
+            passenger.phoneNumber = phone
+        }
     }
 }
 

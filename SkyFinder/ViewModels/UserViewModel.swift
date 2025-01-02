@@ -1,14 +1,21 @@
 import Foundation
 
 class UserViewModel: ObservableObject {
-    @Published var currentUser: User
+    @Published var currentUser: User?
     
     init() {
-        // 模拟用户数据
+        // 模拟用户数据，初始为 nil 表示未登录
+        self.currentUser = nil
+    }
+    
+    // 添加登录方法
+    func login() {
+        // 模拟登录成功
         self.currentUser = User(
             id: "U123456",
             name: "张三",
             avatar: "avatar_default",
+            phoneNumber: "13800138000",
             frequentFlyer: true,
             preferences: User.Preferences(
                 preferredClass: .economy,
@@ -16,6 +23,11 @@ class UserViewModel: ObservableObject {
                 seatPreference: .window
             )
         )
+    }
+    
+    // 添加登出方法
+    func logout() {
+        self.currentUser = nil
     }
     
     // 获取用户常用航线

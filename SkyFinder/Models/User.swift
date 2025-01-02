@@ -4,6 +4,7 @@ struct User: Identifiable, Codable {
     let id: String
     let name: String
     let avatar: String?
+    let phoneNumber: String?
     let frequentFlyer: Bool
     let preferences: Preferences
     
