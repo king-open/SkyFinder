@@ -129,7 +129,7 @@ struct PaymentView: View {
             } message: {
                 Text(paymentSuccess ? "支付成功，正在生成登机牌..." : "支付失败，请重试")
             }
-            .onChange(of: shouldDismiss) { newValue in
+            .onChange(of: shouldDismiss) { oldValue, newValue in
                 if newValue {
                     dismiss()
                 }

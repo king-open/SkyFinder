@@ -133,11 +133,4 @@ struct FlightResultCard: View {
             return "已满"
         }
     }
-}
-
-// 舱位类型
-enum SeatClass: String, CaseIterable {
-    case economy = "经济舱"
-    case business = "商务舱"
-    case first = "头等舱"
 } 

@@ -1,10 +1,12 @@
 import SwiftUI
 import Foundation
 
+// 添加必要的类型定义
 struct FlightDetailView: View {
     @Environment(\.dismiss) private var dismiss
     let flight: Flight
     let onBooking: () -> Void
+    @State private var showingBooking = false
     
     var body: some View {
         NavigationStack {
@@ -36,7 +38,7 @@ struct FlightDetailView: View {
             .safeAreaInset(edge: .bottom) {
                 Button {
                     dismiss()
-                    onBooking()
+                    showingBooking = true
                 } label: {
                     Text("预订 \(flight.price)")
                         .font(.headline)
@@ -47,6 +49,9 @@ struct FlightDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
                 .padding()
+            }
+            .sheet(isPresented: $showingBooking) {
+                BookingView(flight: flight)
             }
         }
     }
@@ -271,6 +276,151 @@ struct DetailRow: View {
                 .foregroundColor(.gray)
             Spacer()
             Text(value)
+        }
+    }
+}
+
+// 完整的 BookingView 实现
+struct BookingView: View {
+    @Environment(\.dismiss) private var dismiss
+    let flight: Flight
+    @State private var passenger = Passenger(
+        name: "",
+        idType: .idCard,
+        idNumber: "",
+        phoneNumber: "",
+        passengerType: .adult
+    )
+    @State private var additionalServices = AdditionalService.services
+    @State private var showingPayment = false
+    @State private var isValid = false
+    
+    var totalPrice: Double {
+        let basePrice = Double(flight.price.dropFirst()) ?? 0
+        let servicesPrice = additionalServices
+            .filter { $0.isSelected }
+            .reduce(0) { $0 + $1.price }
+        return basePrice + servicesPrice
+    }
+    
+    var body: some View {
+        NavigationStack {
+            Form {
+                // 乘客信息
+                Section("乘客信息") {
+                    TextField("姓名", text: $passenger.name)
+                    
+                    Picker("证件类型", selection: $passenger.idType) {
+                        ForEach(Passenger.IDType.allCases, id: \.self) { type in
+                            Text(type.rawValue).tag(type)
+                        }
+                    }
+                    
+                    TextField("证件号码", text: $passenger.idNumber)
+                    
+                    TextField("手机号", text: $passenger.phoneNumber)
+                        .keyboardType(.numberPad)
+                    
+                    Picker("乘客类型", selection: $passenger.passengerType) {
+                        ForEach(Passenger.PassengerType.allCases, id: \.self) { type in
+                            Text(type.rawValue).tag(type)
+                        }
+                    }
+                }
+                
+                // 附加服务
+                Section("附加服务") {
+                    ForEach($additionalServices) { $service in
+                        AdditionalServiceRow(service: $service)
+                    }
+                }
+                
+                // 价格明细
+                Section("价格明细") {
+                    HStack {
+                        Text("机票价格")
+                        Spacer()
+                        Text(flight.price)
+                    }
+                    
+                    ForEach(additionalServices.filter { $0.isSelected }) { service in
+                        HStack {
+                            Text(service.name)
+                            Spacer()
+                            Text("¥\(Int(service.price))")
+                        }
+                    }
+                    
+                    HStack {
+                        Text("总价")
+                            .fontWeight(.bold)
+                        Spacer()
+                        Text("¥\(Int(totalPrice))")
+                            .fontWeight(.bold)
+                            .foregroundColor(.accentBlue)
+                    }
+                }
+            }
+            .navigationTitle("填写订单")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        dismiss()
+                    }
+                }
+            }
+            .onChange(of: passenger) { _, newValue in
+                validateForm()
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    showingPayment = true
+                } label: {
+                    Text("确认支付 ¥\(Int(totalPrice))")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(isValid ? Color.accentBlue : Color.gray)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .disabled(!isValid)
+                .padding()
+            }
+            .sheet(isPresented: $showingPayment) {
+                PaymentView(
+                    flight: flight,
+                    isRoundTrip: false,
+                    returnFlight: nil
+                )
+            }
+        }
+    }
+    
+    private func validateForm() {
+        isValid = !passenger.name.isEmpty &&
+                 !passenger.idNumber.isEmpty &&
+                 passenger.phoneNumber.count == 11
+    }
+}
+
+// 附加服务行组件
+struct AdditionalServiceRow: View {
+    @Binding var service: AdditionalService
+    
+    var body: some View {
+        Toggle(isOn: $service.isSelected) {
+            VStack(alignment: .leading) {
+                Text(service.name)
+                    .font(.headline)
+                Text(service.description)
+                    .font(.caption)
+                    .foregroundColor(.gray)
+                Text("¥\(Int(service.price))")
+                    .font(.subheadline)
+                    .foregroundColor(.accentBlue)
+            }
         }
     }
 } 
