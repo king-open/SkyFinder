@@ -2,14 +2,22 @@ import SwiftUI
 
 struct FlightResultCard: View {
     let flight: Flight
+    var mode: DisplayMode = .search
     @State private var isHighlighted = false
     @State private var showingPayment = false
     @State private var showingDetail = false
     @EnvironmentObject var viewModel: FlightBookingViewModel
     
+    enum DisplayMode {
+        case search
+        case order
+    }
+    
     var body: some View {
         Button {
-            showingDetail = true
+            if mode == .search {
+                showingDetail = true
+            }
         } label: {
             VStack(spacing: 16) {
                 // 航线和价格
@@ -101,6 +109,22 @@ struct FlightResultCard: View {
                     }
                 }
                 .padding(.top, 8)
+                
+                // 根据模式显示不同的底部内容
+                if mode == .order {
+                    HStack {
+                        Text("订单状态")
+                            .foregroundColor(.gray)
+                        Text("已出票")
+                            .foregroundColor(.green)
+                        Spacer()
+                        Button("查看详情") {
+                            showingDetail = true
+                        }
+                        .buttonStyle(.bordered)
+                    }
+                    .padding(.top, 8)
+                }
             }
             .padding()
             .frame(maxWidth: .infinity)
@@ -108,6 +132,7 @@ struct FlightResultCard: View {
             .foregroundColor(isHighlighted ? .white : .black)
             .clipShape(RoundedRectangle(cornerRadius: 16))
         }
+        .buttonStyle(.plain)
         .sheet(isPresented: $showingDetail) {
             FlightDetailView(flight: flight) {
                 showingPayment = true
