@@ -16,81 +16,69 @@ class FlightBookingViewModel: ObservableObject {
     
     // 将 commonAirports 改为公开属性
     let commonAirports: [Airport] = [
-        // 国内机场
+        // 华北地区
         Airport(code: "PEK", city: "北京首都"),
         Airport(code: "PKX", city: "北京大兴"),
+        Airport(code: "TSN", city: "天津滨海"),
+        Airport(code: "TYN", city: "太原武宿"),
+        Airport(code: "SJW", city: "石家庄正定"),
+        
+        // 华东地区
         Airport(code: "SHA", city: "上海虹桥"),
         Airport(code: "PVG", city: "上海浦东"),
+        Airport(code: "NKG", city: "南京禄口"),
+        Airport(code: "HGH", city: "杭州萧山"),
+        Airport(code: "TAO", city: "青岛流亭"),
+        Airport(code: "XMN", city: "厦门高崎"),
+        Airport(code: "FOC", city: "福州长乐"),
+        
+        // 华南地区
         Airport(code: "CAN", city: "广州白云"),
         Airport(code: "SZX", city: "深圳宝安"),
+        Airport(code: "HAK", city: "海口美兰"),
+        Airport(code: "SYX", city: "三亚凤凰"),
+        
+        // 华中地区
+        Airport(code: "WUH", city: "武汉天河"),
+        Airport(code: "CSX", city: "长沙黄花"),
+        Airport(code: "CGO", city: "郑州新郑"),
+        
+        // 西南地区
         Airport(code: "CTU", city: "成都双流"),
         Airport(code: "CKG", city: "重庆江北"),
+        Airport(code: "KMG", city: "昆明长水"),
+        Airport(code: "TNA", city: "济南遥墙"),
+        
+        // 西北地区
+        Airport(code: "XIY", city: "西安咸阳"),
+        Airport(code: "LHW", city: "兰州中川"),
+        Airport(code: "URC", city: "乌鲁木齐地窝堡"),
+        
+        // 东北地区
+        Airport(code: "SHE", city: "沈阳桃仙"),
+        Airport(code: "DLC", city: "大连周水子"),
+        Airport(code: "HRB", city: "哈尔滨太平"),
+        Airport(code: "CGQ", city: "长春龙嘉"),
+        
+        // 港澳台地区
         Airport(code: "HKG", city: "香港国际"),
-        Airport(code: "TPE", city: "台北桃园"),
-        // 国际机场
-        Airport(code: "NRT", city: "东京成田"),
-        Airport(code: "ICN", city: "首尔仁川")
+        Airport(code: "MFM", city: "澳门国际"),
+        Airport(code: "TPE", city: "台北桃园")
     ]
     
-    // 所有可能的航班数据
-    private let allFlights: [Flight] = [
-        // 北京 -> 上海航线
-        Flight(
-            departure: "PEK", arrival: "SHA",
-            departureCity: "北京首都", arrivalCity: "上海虹桥",
-            departureTime: "07:00 AM", arrivalTime: "09:20 AM",
-            duration: "2h20m", transfers: "直飞",
-            price: "¥1280", airline: "国航",
-            isInternational: false
-        ),
-        Flight(
-            departure: "PEK", arrival: "SHA",
-            departureCity: "北京首都", arrivalCity: "上海虹桥",
-            departureTime: "09:30 AM", arrivalTime: "11:50 AM",
-            duration: "2h20m", transfers: "直飞",
-            price: "¥1380", airline: "东航",
-            isInternational: false
-        ),
-        Flight(
-            departure: "PEK", arrival: "SHA",
-            departureCity: "北京首都", arrivalCity: "上海虹桥",
-            departureTime: "13:00 PM", arrivalTime: "15:20 PM",
-            duration: "2h20m", transfers: "直飞",
-            price: "¥1180", airline: "南航",
-            isInternational: false
-        ),
-        
-        // 北京 -> 广州航线
-        Flight(
-            departure: "PEK", arrival: "CAN",
-            departureCity: "北京首都", arrivalCity: "广州白云",
-            departureTime: "08:00 AM", arrivalTime: "11:15 AM",
-            duration: "3h15m", transfers: "直飞",
-            price: "¥1580", airline: "南航",
-            isInternational: false
-        ),
-        Flight(
-            departure: "PEK", arrival: "CAN",
-            departureCity: "北京首都", arrivalCity: "广州白云",
-            departureTime: "14:30 PM", arrivalTime: "17:45 PM",
-            duration: "3h15m", transfers: "直飞",
-            price: "¥1680", airline: "国航",
-            isInternational: false
-        ),
-        
-        // ... 其他航线保持不变 ...
-    ]
+    // 使用 FlightRoutes 替换原来的 allFlights
+    private let allFlights: [Flight] = FlightRoutes.allRoutes
+    
+    // 添加缓存
+    private var airportSearchCache: [String: [Airport]] = [:]
     
     init() {
         updateFlights()
     }
     
     func updateFlights() {
-        // 更新去程航班
-        flights = allFlights
-            .filter { flight in
-                flight.departure == fromAirport && flight.arrival == toAirport
-            }
+        // 直接使用 FlightRoutes 查找航班
+        flights = FlightRoutes.flights(from: fromAirport, to: toAirport)
             .sorted { flight1, flight2 in
                 let formatter = DateFormatter()
                 formatter.dateFormat = "hh:mm a"
@@ -101,10 +89,7 @@ class FlightBookingViewModel: ObservableObject {
         
         // 如果是往返，更新返程航班
         if isRoundTrip {
-            returnFlights = allFlights
-                .filter { flight in
-                    flight.departure == toAirport && flight.arrival == fromAirport
-                }
+            returnFlights = FlightRoutes.flights(from: toAirport, to: fromAirport)
                 .sorted { flight1, flight2 in
                     let formatter = DateFormatter()
                     formatter.dateFormat = "hh:mm a"
@@ -217,6 +202,38 @@ class FlightBookingViewModel: ObservableObject {
         let modifiedDate = Calendar.current.date(byAdding: .hour, value: offset, to: date) ?? date
         
         return formatter.string(from: modifiedDate)
+    }
+    
+    // 优化搜索建议
+    func searchAirports(_ query: String) -> [Airport] {
+        // 如果查询为空，返回空数组
+        if query.isEmpty {
+            return []
+        }
+        
+        // 检查缓存
+        if let cached = airportSearchCache[query] {
+            return cached
+        }
+        
+        // 转换为小写以进行不区分大小写的搜索
+        let lowercaseQuery = query.lowercased()
+        
+        // 使用 filter 而不是 contains 来提高性能
+        let results = commonAirports.filter { airport in
+            airport.code.lowercased().hasPrefix(lowercaseQuery) ||
+            airport.city.lowercased().contains(lowercaseQuery)
+        }
+        
+        // 缓存结果
+        airportSearchCache[query] = results
+        
+        return results
+    }
+    
+    // 清除缓存
+    func clearSearchCache() {
+        airportSearchCache.removeAll()
     }
 }
 

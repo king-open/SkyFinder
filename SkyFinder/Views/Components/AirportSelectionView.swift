@@ -23,23 +23,14 @@ struct AirportSelectionView: View {
     // MARK: - Computed Properties
     /// 搜索建议列表
     var searchSuggestions: [Airport] {
-        if searchText.isEmpty {
-            return []
-        }
-        return viewModel.commonAirports.filter {
-            $0.code.localizedCaseInsensitiveContains(searchText) ||
-            $0.city.localizedCaseInsensitiveContains(searchText)
-        }
+        viewModel.searchAirports(searchText)
     }
     
     var filteredAirports: [Airport] {
         if searchText.isEmpty {
             return viewModel.commonAirports
         } else {
-            return viewModel.commonAirports.filter {
-                $0.code.localizedCaseInsensitiveContains(searchText) ||
-                $0.city.localizedCaseInsensitiveContains(searchText)
-            }
+            return viewModel.searchAirports(searchText)
         }
     }
     
