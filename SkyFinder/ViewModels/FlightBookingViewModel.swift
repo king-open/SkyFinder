@@ -77,26 +77,32 @@ class FlightBookingViewModel: ObservableObject {
     }
     
     func updateFlights() {
-        // 直接使用 FlightRoutes 查找航班
-        flights = FlightRoutes.flights(from: fromAirport, to: toAirport)
-            .sorted { flight1, flight2 in
+        // 使用推荐系统查找航班
+        flights = FlightRoutes.recommendedFlights(
+            for: userViewModel.currentUser,
+            from: fromAirport,
+            to: toAirport
+        ).sorted { flight1, flight2 in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "hh:mm a"
+            let time1 = formatter.date(from: flight1.departureTime) ?? Date()
+            let time2 = formatter.date(from: flight2.departureTime) ?? Date()
+            return time1 < time2
+        }
+        
+        // 往返逻辑类似
+        if isRoundTrip {
+            returnFlights = FlightRoutes.recommendedFlights(
+                for: userViewModel.currentUser,
+                from: toAirport,
+                to: fromAirport
+            ).sorted { flight1, flight2 in
                 let formatter = DateFormatter()
                 formatter.dateFormat = "hh:mm a"
                 let time1 = formatter.date(from: flight1.departureTime) ?? Date()
                 let time2 = formatter.date(from: flight2.departureTime) ?? Date()
                 return time1 < time2
             }
-        
-        // 如果是往返，更新返程航班
-        if isRoundTrip {
-            returnFlights = FlightRoutes.flights(from: toAirport, to: fromAirport)
-                .sorted { flight1, flight2 in
-                    let formatter = DateFormatter()
-                    formatter.dateFormat = "hh:mm a"
-                    let time1 = formatter.date(from: flight1.departureTime) ?? Date()
-                    let time2 = formatter.date(from: flight2.departureTime) ?? Date()
-                    return time1 < time2
-                }
         } else {
             returnFlights = []
         }
